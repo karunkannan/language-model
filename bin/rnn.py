@@ -5,7 +5,7 @@ import csv
 import itertools
 #collect arg
 file_location = sys.argv[1]
-
+''' Data Prep '''
 #import data and remove retweets
 start = "START_TWEET"
 stop = "STOP_TWEET"
@@ -46,5 +46,26 @@ print("\nEXAMPLE:\n%s \n %s \n" % (tweets[1], token_tweet[1]))
 x_train = np.array([[word_to_ix[w] for w in tweet[:-1]] for tweet in token_tweet])
 y_train = np.array([[word_to_ix[w] for w in tweet[1:]] for tweet in token_tweet])
 
-print(x_train[0])
-print(y_train[0])
+print(x_train[1])
+print(y_train[1])
+
+''' RNN Class '''
+class RNN:
+    def __init__(self, vocab, hidden_dim = 100, truncate_factor = 4):
+        self.vocab_dim = vocab
+        self.hidden_dim = hidden_dim
+        self.truncate = truncate_factor
+        #intialize randomly using tanh optimal values from paper
+        #Understanding the difficulty of training deep feedforward neural
+        #networks by Glorot and Bengio
+        #U matrix from input to hidden
+        #V matrix from hidden to output
+        #W matrix from hidden to hidden
+        self.U = np.random.uniform(-1*np.sqrt(1./vocab_dim),
+                np.sqrt(1./vocab_dim), (hidden_dim, vocab_dim))
+        self.V = np.random.uniform(-1*np.sqrt(1./hidden_dim),
+                np.sqrt(1./hidden_dim), (word_dim, hidden_dim))
+        self.W = np.random.uniform(-1*np.sqrt(1./hidden_dim),
+                np.sqrt(1./hidden_dim), (hidden_dim, hidden_dim))
+
+
