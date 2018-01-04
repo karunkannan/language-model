@@ -27,8 +27,9 @@ frequency = nltk.FreqDist(itertools.chain(*token_tweet))
 print("Unique Words: %d" % (frequency.B()))
 
 #Only want to consider words said often
-vocab = frequency.most_common(10000)
-print("Vocab Size: %d" % len(vocab))
+vocab_size = 10000
+vocab = frequency.most_common(vocab_size - 1)
+
 
 #need to build word to index and index to word list and dictionary
 ix_to_word = [x[0] for x in vocab]
@@ -61,11 +62,37 @@ class RNN:
         #U matrix from input to hidden
         #V matrix from hidden to output
         #W matrix from hidden to hidden
-        self.U = np.random.uniform(-1*np.sqrt(1./vocab_dim),
-                np.sqrt(1./vocab_dim), (hidden_dim, vocab_dim))
+        self.U = np.random.uniform(-1*np.sqrt(1./self.vocab_dim),
+                np.sqrt(1./self.vocab_dim), (hidden_dim, self.vocab_dim))
         self.V = np.random.uniform(-1*np.sqrt(1./hidden_dim),
-                np.sqrt(1./hidden_dim), (word_dim, hidden_dim))
+                np.sqrt(1./hidden_dim), (self.vocab_dim, hidden_dim))
         self.W = np.random.uniform(-1*np.sqrt(1./hidden_dim),
                 np.sqrt(1./hidden_dim), (hidden_dim, hidden_dim))
 
+    def forward(self, x):
+        t_steps = len(x)
 
+        #encode input as one-hot vector
+        one_hot_x = []
+        for num in x:
+            vec = np.zeros(self.vocab_dim)
+            vec[x] = 1
+            one_hot_x.append(vec)
+        one_hot_x = np.asarray(one_hot_x)
+
+        #init hidden and output states
+        h = np.zeros((t_steps + 1, self.hidden_dim))
+        o = np.zeros((t_steps, self.vocab_dim))
+        for t in np.arange(t_steps):
+            h[t] = np.tanh(self.U.dot(one_hot_x[t]) + self.W.dot(h[t-1]))
+            o[t] = self.softmax(self.V.dot(h[t]))
+        return o, h
+
+    def softmax(self, x):
+        arr = np.exp(x)
+        sum_arr = np.sum(arr)
+        return arr/sum_arr
+
+rnn = RNN(vocab_size)
+o, h = rnn.forward(x_train[1])
+print(o.shape)
